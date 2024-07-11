@@ -5,7 +5,7 @@ APP="$(basename $0)"
 function help() {
     cat <<EOF
 NAME
-    $APP - $APP continuously calls make when source files changes and executes the produced artifact.
+    $APP - $APP continuously calls make when source files change and executes the produced artifact.
 
 SYNOPSYS
     $APP [--cmd <command|file>] [--no-cmd] [--no-git] [--gitignore] [--exclude <regex>] [-h|--help] [-- <make-args>]

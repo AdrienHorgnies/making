@@ -1,0 +1,10 @@
+Package: making
+Version: {{VERSION}}
+Architecture: amd64
+Installed-Size: {{DISK_USAGE}}
+Essential: no
+Priority: Optional
+Depends: make
+Recommends: git
+Maintainer: Adrien Horgnies <ah@fita.dev>
+Description: {{DESCRIPTION}}
