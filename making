@@ -1,0 +1,178 @@
+#!/bin/bash
+set -e
+APP="$(basename $0)"
+
+function help() {
+    cat <<EOF
+NAME
+    $APP - $APP continuously calls make when source files changes and executes the produced artifact.
+
+SYNOPSYS
+    $APP [--cmd <command|file>] [--no-cmd] [--no-git] [--gitignore] [--exclude <regex>] [-h|--help] [-- <make-args>]
+
+DESCRIPTION
+    $APP calls make, and does so again so whenever a source file changes.
+    $APP executes the rightmost executable TARGET, and restarts it when make succeeds.
+    make arguments must be provided after all making arguments, after 2 dashes if any option is provided to make.
+
+    make considers source files changes if:
+      - it isn't ignored by git (or git isn't use)
+      - at least one target isn't up to date according to make
+
+OPTIONS
+    --cmd=<command>
+    --cmd=<file>
+        Execute the provided command or file instead of guessing what to execute.
+    --no-cmd
+        Only build and don't try to execute anything.
+    --no-git
+        Consider all files changes, even if they're ignored by git (still ignores the directory .git).
+    --gitignore
+        Don't even watch ignored files.
+        $APP watch all files (except .git/*) and then queries git to know which files to ignore upon file system events.
+        But a large ignored directory may be slow to watch.
+        This option transforms .gitignore into a regex that inotify will respect...
+        But it's not possible to implement bang rules (starting with !) with POSIX extended regex.
+        $APP will miss events on such files... if they were created after its initial start.
+    --exclude=<regex>
+        Append the POSIX extended regex to inotify --exclude option.
+    -h | --help
+        Print this help message.
+EOF
+}
+
+function cyan() {
+    echo $(tput setaf 6)$@$(tput sgr0)
+}
+function magenta() {
+    echo $(tput setaf 5)$@$(tput sgr0)
+}
+function red() {
+    echo $(tput setaf 1)$@$(tput sgr0)
+}
+function fail() {
+    red "$*" >&2
+    exit 1
+}
+
+function assertArgNoDash() {
+    local opt="$1"
+    local val="$2"
+    if [[ "${val}" == -* ]]; then
+        fail "$APP: option '${opt}' requires an argument but next WORD '${val}' is an option (begins with a dash)"
+    fi
+}
+
+function exclusive() {
+    count=0
+    for arg in $@; do
+        if [[ "$opts" == *"$arg"* ]]; then
+            count=$((count + 1))
+        fi
+        if [ "$count" -gt 1 ]; then
+            fail "You can define only one of $*"
+        fi
+    done
+}
+
+opts=$(getopt -o h --long cmd:,no-cmd,no-git,gitignore,exclude:,help -n "$APP" -- "$@")
+
+exclusive --cmd --no-cmd
+exclusive --no-git --git-gitignore
+
+while true; do
+    case "$1" in
+        --cmd )
+            assertArgNoDash "$1" "$2"
+            cmd="$2"
+            shift 2
+            ;;
+        --no-cmd )
+            no_cmd="enabled"
+            shift
+            ;;
+        --no-git )
+            no_git="enabled"
+            shift
+            ;;
+        --gitignore )
+            shift
+            gitignore="enabled"
+            ;;
+        --exclude )
+            assertArgNoDash "$1" "$2"
+            exclude="$2"
+            shift 2
+            ;;
+        -h | --help )
+            help
+            exit 0
+            ;;
+        -- )
+            shift
+            break
+            ;;
+        * )
+            break
+            ;;
+    esac
+done
+
+args=($@)
+cmd=
+pid=
+trap 'trap - ERR SIGINT SIGTERM EXIT; cyan "cleaning up..."; kill -- -$$;' ERR SIGINT SIGTERM EXIT
+
+
+function killRunningCommand() {
+    if [ "$pid" ] && isMyPID "$pid"; then
+        cyan "kill $cmd ($pid)"
+        kill -15 "$pid"
+    fi
+    pid=
+}
+
+# checks this script owns the PID ($1) to avoid killing a random process.
+function isMyPID() {
+    if [ -z "$1" ]; then
+        return 2
+    elif [ "$1" -eq 1 ]; then
+        return 1
+    elif [ "$1" -eq $$ ]; then
+        return 0
+    fi
+    isMyPID $(ps -o ppid= -p "$1" 2>/dev/null)
+}
+
+function makeThenRun() {
+    cyan "make ${args[@]}"
+    if make ${args[@]}; then
+        killRunningCommand
+        if [ ${#args[@]} -eq 0 ]; then
+            executable=$(find $(grep -Pom1 '^[[:print:]]+(?=:)' [Mm]akefile) -type f -executable | tail -1)
+        else
+            executable=$(find ${args[@]} -type f -executable | tail -1)
+        fi
+        if [ -z "$executable" ]; then
+            return
+        fi
+        ./$executable &
+        cmd=$executable
+        pid=$!
+        cyan "running $executable ($pid)"
+    else
+        red "failed to make"
+    fi
+}
+
+makeThenRun
+inotifywait -m -q --exclude './.git/.*' --format '%w%f' -e create -e modify -e delete -r . |
+while read filename; do
+    if ! git check-ignore -q "$filename" && ! make -q ${args[@]}; then
+        if [ -d "$filename" ]; then
+            filename="$filename/"
+        fi
+        magenta "${filename#*/} changed"
+        makeThenRun
+    fi
+done
