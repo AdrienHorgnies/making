@@ -1,6 +1,6 @@
 .PHONY = clean install test uninstall
 
-VERSION = $(shell git rev-list HEAD --count)
+VERSION = 0.0.$(shell git rev-list HEAD --count)
 PKG = making_$(VERSION)_1_amd64
 DEB = $(PKG).deb
 DESCRIPTION = $(shell ./making -h | sed -n 2p | cut -d- -f2 | xargs)
