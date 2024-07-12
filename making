@@ -15,7 +15,7 @@ DESCRIPTION
     $APP executes the rightmost executable TARGET, and restarts it when make succeeds.
     make arguments must be provided after all making arguments, after 2 dashes if any option is provided to make.
 
-    make considers source files changes if:
+    $APP considers source files changes if:
       - it isn't ignored by git (or git isn't use)
       - at least one target isn't up to date according to make
 
