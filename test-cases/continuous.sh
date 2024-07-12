@@ -5,7 +5,7 @@ set -e
 echo "TEST: continuously making whenever sources are modified"
 
 $making >/dev/null 2>&1 &
-echo world > person
+sleep .05 && echo world > person
 test_created hello
 test_content hello "world"
 sleep .05 && echo "john" > person
