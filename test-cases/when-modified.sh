@@ -4,7 +4,7 @@ set -e
 
 echo "TEST: make when sources are modified"
 
-$making >/dev/null 2>&1 & kid=$!
+$making >/dev/null 2>&1 &
 echo world > person
 test_created hello
 

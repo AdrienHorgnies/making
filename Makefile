@@ -25,3 +25,4 @@ uninstall:
 
 clean:
 	rm -rf *_amd64 *.deb
+	cd test-project && make clean

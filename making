@@ -137,11 +137,11 @@ function guessCmd() {
     if [ ${#args[@]} -eq 0 ]; then
         targets=($(grep -Pom1 '^[[:print:]]+(?=:)' [Mm]akefile))
     else
-        targets=(${#args[@]})
+        targets=(${args[@]})
     fi
     for (( i=${#targets[@]}-1; i>=0; i-- )); do
-        if [ -f "${my_array[$i]}" ] && [ -x "${my_array[$i]}" ]; then
-            echo "${my_array[$i]}"
+        if [ -f "${targets[$i]}" ] && [ -x "${targets[$i]}" ]; then
+            cmd="./${targets[$i]}"
             return
         fi
     done

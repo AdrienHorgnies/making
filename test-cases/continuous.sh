@@ -2,9 +2,9 @@
 set -e
 . test-lib.sh
 
-echo "TEST: continuously make whenever sources are modified"
+echo "TEST: continuously making whenever sources are modified"
 
-$making >/dev/null 2>&1 & kid=$!
+$making >/dev/null 2>&1 &
 echo world > person
 test_created hello
 test_content hello "world"
