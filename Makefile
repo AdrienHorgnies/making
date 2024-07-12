@@ -20,7 +20,7 @@ install: package
 
 test: making test-lib.sh test-project/Makefile $(wildcard test-cases/*)
 	ls test-cases/* | ./repeat $(n) | parallel --color-failed --halt now,fail=1 bash
-	@rm -rf /tmp/*-making-test-bed
+	-@rm -rf /tmp/*-making-test-bed
 
 uninstall:
 	sudo dpkg -r remove

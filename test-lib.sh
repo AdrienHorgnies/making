@@ -11,7 +11,7 @@ function cleanTrap() {
     set +x
     trap - EXIT SIGINT SIGTERM
     pkill -P $(pgrep -P $$ -d, making)
-    rm -rf "$workdir" || yellow "$workdir not deleted (too fast?)"
+    rm -rf "$workdir" 2>/dev/null || yellow "$workdir not deleted (too fast?)"
 
     return $rc
 }
