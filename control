@@ -4,7 +4,7 @@ Architecture: amd64
 Installed-Size: {{DISK_USAGE}}
 Essential: no
 Priority: Optional
-Depends: make
+Depends: make,inotify-tools
 Recommends: git
 Maintainer: Adrien Horgnies <ah@fita.dev>
 Description: {{DESCRIPTION}}

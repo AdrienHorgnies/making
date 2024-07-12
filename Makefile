@@ -8,9 +8,9 @@ DISK_USAGE = $(shell du -bs making | cut -d'	' -f1)
 
 package: $(DEB)
 $(DEB): control making
-	mkdir -p $(PKG)/DEBIAN $(PKG)/usr/local/bin
+	mkdir -p $(PKG)/DEBIAN $(PKG)/usr/bin
 	sed 's/{{VERSION}}/$(VERSION)/; s/{{DESCRIPTION}}/$(DESCRIPTION)/; s/{{DISK_USAGE}}/$(DISK_USAGE)/' control > $(PKG)/DEBIAN/control
-	cp making $(PKG)/usr/local/bin
+	cp making $(PKG)/usr/bin
 	dpkg-deb --build $(PKG)
 
 install: package
