@@ -6,6 +6,8 @@ DEB = $(PKG).deb
 DESCRIPTION = $(shell ./making -h | sed -n 2p | cut -d- -f2 | xargs)
 DISK_USAGE = $(shell du -bs making | cut -d'	' -f1)
 
+n ?= 1
+
 package: $(DEB)
 $(DEB): control making
 	mkdir -p $(PKG)/DEBIAN $(PKG)/usr/bin
@@ -17,7 +19,7 @@ install: package
 	sudo dpkg -i $(DEB)
 
 test: making test-lib.sh test-project/Makefile $(wildcard test-cases/*)
-	parallel bash ::: test-cases/*
+	ls test-cases/* | ./repeat $(n) | parallel --color-failed bash
 	rm -rf /tmp/*-making-test-bed
 
 uninstall:

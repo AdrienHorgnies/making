@@ -169,7 +169,7 @@ function makeThenRun() {
 }
 
 makeThenRun
-inotifywait -m -q --exclude './.git/.*' --format '%w%f' -e create -e modify -e delete -r . |
+inotifywait -m -q --exclude './.git/.*' --format '%w%f' -e close_write -e delete -r . |
 while read filename; do
     if ! git check-ignore -q "$filename" && ! make -q ${args[@]}; then
         if [ -d "$filename" ]; then

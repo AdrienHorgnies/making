@@ -1,18 +1,18 @@
 #!/bin/bash
 root="$(git rev-parse --show-toplevel)"
 
+function yellow() {
+    echo "$(tput setaf 3)$*$(tput sgr0)"
+}
+
 # kills child processes
 function cleanTrap() {
     rc=$?
+    set +x
     trap - EXIT SIGINT SIGTERM
-    kids=$(pgrep -P $$ -d, making || echo)
-    if [ "$kids" ]; then
-        pkill -P "$kids"
-    fi
-    cd "$root"
-    if [[ "$OLDPWD" == *-making-test-bed ]]; then
-        rm -rf "$OLDPWD"
-    fi
+    pkill -P $(pgrep -P $$ -d, making)
+    rm -rf "$workdir" || yellow "$workdir not deleted (too fast?)"
+
     return $rc
 }
 
@@ -59,5 +59,7 @@ function test_content() {
 # creates a directory where I can test making
 making="$(git rev-parse --show-toplevel)/making"
 trap "cleanTrap" EXIT SIGINT SIGTERM
-cd "$(mktemp -d --suffix -making-test-bed)"
-cp $root/test-project/* .
+workdir="$(mktemp -d --suffix -making-test-bed)"
+cd "$workdir"
+cp $root/test-project/* "$workdir"
+git init >/dev/null 2>&1

@@ -1,0 +1,8 @@
+#!/bin/bash
+# Uses to run the tests multiple times
+n="$1"
+
+saved="$(cat /dev/stdin)"
+for i in $(seq $n); do
+    echo "$saved"
+done
