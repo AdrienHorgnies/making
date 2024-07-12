@@ -1,2 +1,6 @@
 *.deb
 *_amd64/
+4913
+*~
+test-project/hello
+test-project/person

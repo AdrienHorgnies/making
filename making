@@ -8,7 +8,7 @@ NAME
     $APP - $APP continuously calls make when source files change and executes the produced artifact.
 
 SYNOPSYS
-    $APP [--cmd <command|file>] [--no-cmd] [--no-git] [--gitignore] [--exclude <regex>] [-h|--help] [-- <make-args>]
+    $APP [--cmd <command|file>] [--no-cmd] [--no-git] [--exclude <regex>] [-h|--help] [-- <make-args>]
 
 DESCRIPTION
     $APP calls make, and does so again so whenever a source file changes.
@@ -20,22 +20,15 @@ DESCRIPTION
       - at least one target isn't up to date according to make
 
 OPTIONS
-    --cmd=<command>
-    --cmd=<file>
+    --cmd <command>
+    --cmd <file>
         Execute the provided command or file instead of guessing what to execute.
     --no-cmd
         Only build and don't try to execute anything.
     --no-git
-        Consider all files changes, even if they're ignored by git (still ignores the directory .git).
-    --gitignore
-        Don't even watch ignored files.
-        $APP watch all files (except .git/*) and then queries git to know which files to ignore upon file system events.
-        But a large ignored directory may be slow to watch.
-        This option transforms .gitignore into a regex that inotify will respect...
-        But it's not possible to implement bang rules (starting with !) with POSIX extended regex.
-        $APP will miss events on such files... if they were created after its initial start.
-    --exclude=<regex>
-        Append the POSIX extended regex to inotify --exclude option.
+        Ignore the existence of git.
+    --exclude <regex>
+        Forward the <regex> to inotifywait option --exclude.
     -h | --help
         Print this help message.
 EOF
@@ -78,12 +71,12 @@ function exclusive() {
 opts=$(getopt -o h --long cmd:,no-cmd,no-git,gitignore,exclude:,help -n "$APP" -- "$@")
 
 exclusive --cmd --no-cmd
-exclusive --no-git --git-gitignore
 
 while true; do
     case "$1" in
         --cmd )
             assertArgNoDash "$1" "$2"
+            custom_cmd="enabled"
             cmd="$2"
             shift 2
             ;;
@@ -94,10 +87,6 @@ while true; do
         --no-git )
             no_git="enabled"
             shift
-            ;;
-        --gitignore )
-            shift
-            gitignore="enabled"
             ;;
         --exclude )
             assertArgNoDash "$1" "$2"
@@ -119,17 +108,17 @@ while true; do
 done
 
 args=($@)
-cmd=
 pid=
+running_cmd=
 trap 'trap - ERR SIGINT SIGTERM EXIT; cyan "cleaning up..."; kill -- -$$;' ERR SIGINT SIGTERM EXIT
-
 
 function killRunningCommand() {
     if [ "$pid" ] && isMyPID "$pid"; then
-        cyan "kill $cmd ($pid)"
+        cyan "kill $running_cmd ($pid)"
         kill -15 "$pid"
     fi
-    pid=
+    unset running_cmd
+    unset pid
 }
 
 # checks this script owns the PID ($1) to avoid killing a random process.
@@ -144,22 +133,36 @@ function isMyPID() {
     isMyPID $(ps -o ppid= -p "$1" 2>/dev/null)
 }
 
+function guessCmd() {
+    if [ ${#args[@]} -eq 0 ]; then
+        targets=($(grep -Pom1 '^[[:print:]]+(?=:)' [Mm]akefile))
+    else
+        targets=(${#args[@]})
+    fi
+    for (( i=${#targets[@]}-1; i>=0; i-- )); do
+        if [ -f "${my_array[$i]}" ] && [ -x "${my_array[$i]}" ]; then
+            echo "${my_array[$i]}"
+            return
+        fi
+    done
+    return 1
+}
+
 function makeThenRun() {
     cyan "make ${args[@]}"
     if make ${args[@]}; then
-        killRunningCommand
-        if [ ${#args[@]} -eq 0 ]; then
-            executable=$(find $(grep -Pom1 '^[[:print:]]+(?=:)' [Mm]akefile) -type f -executable | tail -1)
-        else
-            executable=$(find ${args[@]} -type f -executable | tail -1)
-        fi
-        if [ -z "$executable" ]; then
+        if [ "$no_cmd" ]; then
             return
         fi
-        ./$executable &
-        cmd=$executable
-        pid=$!
-        cyan "running $executable ($pid)"
+        if [ "$custom_cmd" ] || guessCmd; then
+            killRunningCommand
+            $cmd &
+            pid=$!
+            running_cmd=$cmd
+            cyan "running $running_cmd ($pid)"
+        else
+            cyan "made ${args[@]}"
+        fi
     else
         red "failed to make"
     fi

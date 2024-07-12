@@ -1,4 +1,4 @@
-.PHONY = clean install uninstall
+.PHONY = clean install test uninstall
 
 VERSION = $(shell git rev-list HEAD --count)
 PKG = making_$(VERSION)_1_amd64
@@ -13,8 +13,13 @@ $(DEB): control making
 	cp making $(PKG)/usr/local/bin
 	dpkg-deb --build $(PKG)
 
-install:
+install: package
 	sudo dpkg -i $(DEB)
+
+test: making test-lib.sh test-project/Makefile $(wildcard test-cases/*)
+	parallel bash ::: test-cases/*
+	rm -rf /tmp/*-making-test-bed
+
 uninstall:
 	sudo dpkg -r remove
 
