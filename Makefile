@@ -30,7 +30,7 @@ publish: package
 	rsync --chown aptly:aptly $(DEB) root@$(REP):/home/aptly/$(DEB)
 	$(APTLY) repo add -remove-files fita /home/aptly/$(DEB)
 	$(APTLY) snapshot create $(SNAP) from repo fita
-	$(APTLY) publish snapshot $(SNAP) aptly.fita.dev
+	$(APTLY) publish snapshot $(SNAP) aptly.fita.dev:.
 	echo $(SNAP) > publish
 
 uninstall:
