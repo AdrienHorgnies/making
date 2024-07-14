@@ -30,12 +30,12 @@ publish: package
 	rsync --chown aptly:aptly $(DEB) root@$(REP):/home/aptly/$(DEB)
 	$(APTLY) repo add -remove-files fita /home/aptly/$(DEB)
 	$(APTLY) snapshot create $(SNAP) from repo fita
-	$(APTLY) publish snapshot $(SNAP) aptly.fita.dev:.
+	$(APTLY) publish snapshot $(SNAP) filesystem:aptly.fita.dev:.
 	echo $(SNAP) > publish
 
 uninstall:
 	sudo dpkg -r remove
 
 clean:
-	rm -rf *_amd64 *.deb
+	rm -rf *_amd64 *.deb publish
 	cd test-project && make clean
