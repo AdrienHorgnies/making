@@ -1,12 +1,13 @@
 .PHONY = clean install test uninstall
 
-A = /home/aptly/bin/aptly
 VERSION = 0.0.$(shell git rev-list HEAD --count)
 PKG = making_$(VERSION)_1_amd64
 DEB = $(PKG).deb
 DESCRIPTION = $(shell ./making -h | sed -n 2p | cut -d- -f2 | xargs)
 DISK_USAGE = $(shell du -bs making | cut -d'	' -f1)
+
 REP = aptly.fita.dev
+APTLY = ssh root@$(REP) runuser -u aptly -- /home/aptly/bin/aptly
 SNAP = $(shell date -Im)
 
 n ?= 1
@@ -27,9 +28,9 @@ test: making test-lib.sh test-project/Makefile $(wildcard test-cases/*)
 
 publish: package
 	rsync --chown aptly:aptly $(DEB) root@$(REP):/home/aptly/$(DEB)
-	ssh root@$(REP) runuser -u aptly -- $(A) repo add /home/aptly/$(DEB) -remove-files
-	ssh root@$(REP) runuser -u aptly -- $(A) snapshot create $(SNAP) from repo fita
-	ssh root@$(REP) runuser -u aptly -- $(A) publish snapshot $(SNAP)
+	$(APTLY) repo add /home/aptly/$(DEB) -remove-files
+	$(APTLY) snapshot create $(SNAP) from repo fita
+	$(APTLY) publish snapshot $(SNAP)
 	echo $(SNAP) > publish
 
 uninstall:
