@@ -26,10 +26,10 @@ test: making test-lib.sh test-project/Makefile $(wildcard test-cases/*)
 	-@rm -rf /tmp/*-making-test-bed
 
 publish: package
-	rsync --chown aptly:aptly $(DEB) root@$(REP):/home/aptly/debs/$(DEB)
-	ssh root@$(REP) "runuser -u aptly -- $(A) repo add $(DEB) -remove-files"
-	ssh root@$(REP) "runuser -u aptly -- $(A) snapshot create $(SNAP) from repo fita"
-	ssh root@$(REP) "runuser -u aptly -- $(A) publish snapshot $(SNAP)"
+	rsync --chown aptly:aptly $(DEB) root@$(REP):/home/aptly/$(DEB)
+	ssh root@$(REP) runuser -u aptly -- $(A) repo add /home/aptly/$(DEB) -remove-files
+	ssh root@$(REP) runuser -u aptly -- $(A) snapshot create $(SNAP) from repo fita
+	ssh root@$(REP) runuser -u aptly -- $(A) publish snapshot $(SNAP)
 	echo $(SNAP) > publish
 
 uninstall:
