@@ -28,7 +28,7 @@ test: making test-lib.sh test-project/Makefile $(wildcard test-cases/*)
 
 publish: package
 	rsync --chown aptly:aptly $(DEB) root@$(REP):/home/aptly/$(DEB)
-	$(APTLY) repo add fita /home/aptly/$(DEB) -remove-files
+	$(APTLY) repo add -remove-files fita /home/aptly/$(DEB)
 	$(APTLY) snapshot create $(SNAP) from repo fita
 	$(APTLY) publish snapshot $(SNAP)
 	echo $(SNAP) > publish
