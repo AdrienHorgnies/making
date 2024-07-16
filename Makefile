@@ -1,14 +1,10 @@
-.PHONY = clean test package install uninstall
+.PHONY = clean test package publish install uninstall
 
 VERSION = 0.0.$(shell git rev-list HEAD --count)
 PKG = making_$(VERSION)_1_amd64
 DEB = $(PKG).deb
 DESCRIPTION = $(shell ./making -h | sed -n 2p | cut -d- -f2 | xargs)
 DISK_USAGE = $(shell du -bs making | cut -d'	' -f1)
-
-REP = aptly.fita.dev
-APTLY = ssh root@$(REP) runuser -u aptly -- /home/aptly/bin/aptly
-SNAP = $(shell date -Im)
 
 n ?= 1
 
@@ -24,11 +20,7 @@ test: making test-lib.sh test-project/Makefile $(wildcard test-cases/*)
 	-@rm -rf /tmp/*-making-test-bed
 
 publish: $(DEB)
-	rsync --chown aptly:aptly $(DEB) root@$(REP):/home/aptly/$(DEB)
-	$(APTLY) repo add -remove-files fita /home/aptly/$(DEB)
-	$(APTLY) snapshot create $(SNAP) from repo fita
-	$(APTLY) publish snapshot $(SNAP) filesystem:aptly.fita.dev:.
-	echo $(SNAP) > publish
+	rsync $(DEB) aptly.fita.dev:/usr/share/aptly/incoming
 
 install: $(DEB)
 	sudo dpkg -i $(DEB)
