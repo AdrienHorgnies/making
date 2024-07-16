@@ -76,8 +76,7 @@ while true; do
     case "$1" in
         --cmd )
             assertArgNoDash "$1" "$2"
-            custom_cmd="enabled"
-            cmd="$2"
+            custom_cmd="$2"
             shift 2
             ;;
         --no-cmd )
@@ -141,8 +140,8 @@ function guessCmd() {
     fi
     for (( i=${#targets[@]}-1; i>=0; i-- )); do
         if [ -f "${targets[$i]}" ] && [ -x "${targets[$i]}" ]; then
-            cmd="./${targets[$i]}"
-            return
+            echo "./${targets[$i]}"
+            return 0
         fi
     done
     return 1
@@ -151,17 +150,15 @@ function guessCmd() {
 function makeThenRun() {
     cyan "make ${args[@]}"
     if make ${args[@]}; then
-        if [ "$no_cmd" ]; then
-            return
-        fi
-        if [ "$custom_cmd" ] || guessCmd; then
+        cmd=${custom_cmd:-$(guessCmd)}
+        if [ "$no_cmd" ] || [ -z "$cmd" ]; then
+            cyan "made ${args[@]}"
+        else
             killRunningCommand
             $cmd &
             pid=$!
             running_cmd=$cmd
             cyan "running $running_cmd ($pid)"
-        else
-            cyan "made ${args[@]}"
         fi
     else
         red "failed to make"
