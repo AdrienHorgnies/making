@@ -140,35 +140,53 @@ function guessCmd() {
     fi
     for (( i=${#targets[@]}-1; i>=0; i-- )); do
         if [ -f "${targets[$i]}" ] && [ -x "${targets[$i]}" ]; then
-            echo "./${targets[$i]}"
+            guessed_cmd="./${targets[$i]}"
             return 0
         fi
     done
     return 1
 }
 
+function canRun() {
+    if [ "$no_cmd" ]; then
+        return 1
+    fi
+    if [ "$custom_cmd" ]; then
+        return 0
+    fi
+    guessCmd
+}
+
 function makeThenRun() {
     cyan "make ${args[@]}"
     if make ${args[@]}; then
-        cmd=${custom_cmd:-$(guessCmd)}
-        if [ "$no_cmd" ] || [ -z "$cmd" ]; then
-            cyan "made ${args[@]}"
-        else
+        if canRun; then
+            cmd=${custom_cmd:-$guessed_cmd}
             killRunningCommand
             $cmd &
             pid=$!
             running_cmd=$cmd
             cyan "running $running_cmd ($pid)"
+        else
+            cyan "made ${args[@]}"
         fi
     else
         red "failed to make"
     fi
 }
 
+function tracked() {
+    if [ -z "$no_git" ] && git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+        ! git check-ignore -q "$1"
+    else
+        return 1
+    fi
+}
+
 makeThenRun
 inotifywait -m -q --exclude './.git/.*' --format '%w%f' -e close_write -e delete -r . |
 while read filename; do
-    if ! git check-ignore -q "$filename" && ! make -q ${args[@]}; then
+    if tracked "$filename" && ! make -q ${args[@]}; then
         if [ -d "$filename" ]; then
             filename="$filename/"
         fi

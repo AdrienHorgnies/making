@@ -10,15 +10,13 @@ goodbye: person
 	echo "echo 'Goodbye, $(shell cat person)!'" >>  goodbye
 	chmod +x goodbye
 
-a:
-	touch a
-
-b:
-	touch b
+c: a b
+	cp a c
+	cat b >> c
 
 touchp: touchtemplate person
 	sed "s/{{filename}}/$(shell cat person)/" touchtemplate > touchp
 	chmod +x touchp
 
 clean:
-	rm -f a b hello goodbye touchp
+	rm -f a b c hello goodbye touchp

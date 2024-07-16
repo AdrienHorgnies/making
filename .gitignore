@@ -1,7 +1,10 @@
 *.deb
 *_amd64/
-4913
 *~
+4913
+a
+b
+c
 test-project/hello
 test-project/person
 test-project/touchp
