@@ -177,13 +177,10 @@ function makeThenRun() {
 }
 
 function tracked() {
-    if [ "$no_git" ]; then
+    if [ "$no_git" ] || ! git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
         return 0
-    elif git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
-        ! git check-ignore -q "$1"
-    else
-        return 1
     fi
+    ! git check-ignore -q "$1"
 }
 
 makeThenRun
