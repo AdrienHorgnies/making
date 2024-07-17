@@ -22,15 +22,15 @@ DESCRIPTION
 OPTIONS
     --cmd <command>
     --cmd <file>
-        Execute the provided command or file instead of guessing what to execute.
+        Executes the provided command or file instead of guessing what to execute.
     --no-cmd
-        Only build and don't try to execute anything.
+        Only builds and doesn't try to execute anything.
     --no-git
-        Ignore the existence of git.
+        Ignores the existence of git.
     --exclude <regex>
-        Forward the <regex> to inotifywait option --exclude.
+        Forwards the <regex> to inotifywait option --exclude (overrides the default behavior of ignoring './.git/*').
     -h | --help
-        Print this help message.
+        Prints this help message and exits.
 EOF
 }
 
@@ -71,6 +71,7 @@ function exclusive() {
 opts=$(getopt -o h --long cmd:,no-cmd,no-git,gitignore,exclude:,help -n "$APP" -- "$@")
 
 exclusive --cmd --no-cmd
+exclude_option="--exclude './.git/.*'"
 
 while true; do
     case "$1" in
@@ -89,7 +90,7 @@ while true; do
             ;;
         --exclude )
             assertArgNoDash "$1" "$2"
-            exclude="$2"
+            exclude_option="--exclude $2"
             shift 2
             ;;
         -h | --help )
@@ -186,7 +187,7 @@ function tracked() {
 }
 
 makeThenRun
-inotifywait -m -q --exclude './.git/.*' --format '%w%f' -e close_write -e delete -r . |
+inotifywait -m -q $exclude_option --format '%w%f' -e close_write -e delete -r . |
 while read filename; do
     if tracked "$filename" && ! make -q ${args[@]}; then
         if [ -d "$filename" ]; then
