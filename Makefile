@@ -13,7 +13,7 @@ $(DEB): control making
 	mkdir -p $(PKG)/DEBIAN $(PKG)/usr/bin
 	sed 's/{{VERSION}}/$(VERSION)/; s/{{DESCRIPTION}}/$(DESCRIPTION)/; s/{{DISK_USAGE}}/$(DISK_USAGE)/' control > $(PKG)/DEBIAN/control
 	cp making $(PKG)/usr/bin
-	dpkg-deb --build $(PKG)
+	SOURCE_DATE_EPOCH=0 dpkg-deb --build $(PKG)
 
 test: making test-lib.sh test-project/Makefile $(wildcard test-cases/*)
 	ls test-cases/* | ./repeat $(n) | parallel --color-failed --halt now,fail=1 bash
