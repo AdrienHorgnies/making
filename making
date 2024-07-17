@@ -5,7 +5,7 @@ APP="$(basename $0)"
 function help() {
     cat <<EOF
 NAME
-    $APP - $APP wraps make, it triggers (inotify) on any source (git) file change and can execute artifacts.
+$APP - $APP calls make on any source (git) file change (inotify) and can execute artifacts.
 
 SYNOPSYS
     $APP [--cmd <command|file>] [--no-cmd] [--no-git] [--exclude <regex>] [-h|--help] [-- <make-args>]

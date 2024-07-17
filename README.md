@@ -1,6 +1,6 @@
 # making
 
-`making` wraps `make`, it triggers (`inotify`) on any source (`git`) file change and can execute artifacts.
+`making` calls `make` on any source (`git`) file change (`inotify`) and can execute artifacts.
 
 ## Usage
 
