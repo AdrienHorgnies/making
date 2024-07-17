@@ -8,3 +8,4 @@ Recommends: git
 Installed-Size: {{DISK_USAGE}}
 Maintainer: Adrien Horgnies <ah@fita.dev>
 Description: {{DESCRIPTION}}
+Homepage: https://github.com/AdrienHorgnies/making
