@@ -5,7 +5,7 @@ APP="$(basename $0)"
 function help() {
     cat <<EOF
 NAME
-    $APP - $APP continuously calls make when source files change and executes the produced artifact.
+    $APP - $APP wraps make, it triggers (inotify) on any source (git) file change and can execute artifacts.
 
 SYNOPSYS
     $APP [--cmd <command|file>] [--no-cmd] [--no-git] [--exclude <regex>] [-h|--help] [-- <make-args>]
@@ -13,7 +13,7 @@ SYNOPSYS
 DESCRIPTION
     $APP calls make, and does so again so whenever a source file changes.
     $APP executes the rightmost executable TARGET, and restarts it when make succeeds.
-    make arguments must be provided after all making arguments, after 2 dashes if any option is provided to make.
+    $APP can foward arguments to make, use 2 dashes to separate making and make arguments to avoid confusion.
 
     $APP considers source files changes if:
       - it isn't ignored by git (or git isn't use)
