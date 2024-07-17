@@ -1,10 +1,10 @@
 Package: making
 Version: {{VERSION}}
-Architecture: amd64
-Installed-Size: {{DISK_USAGE}}
-Essential: no
+Section: devel
 Priority: Optional
+Architecture: amd64
 Depends: make,inotify-tools
 Recommends: git
+Installed-Size: {{DISK_USAGE}}
 Maintainer: Adrien Horgnies <ah@fita.dev>
 Description: {{DESCRIPTION}}
