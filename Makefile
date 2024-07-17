@@ -20,6 +20,8 @@ test: making test-lib.sh test-project/Makefile $(wildcard test-cases/*)
 	-@rm -rf /tmp/*-making-test-bed
 
 publish: $(DEB)
+	git tag $(VERSION)
+	git push origin $(VERSION)
 	rsync $(DEB) aptly.fita.dev:/usr/share/aptly/incoming
 
 install: $(DEB)
