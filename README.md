@@ -30,4 +30,12 @@ Furthermore, the patch version correspond to the number of commits on the branch
 ## Auditing
 
 The build is reproducible.
-The sha256 sum of the package.deb should match.
+The sha256 sum of all the packages of the same version must match.
+
+```console
+$ wget -q https://aptly.fita.dev/pool/main/m/making/making_0.0.34_1_amd64.deb -O repo.deb
+$ make package >/dev/null && mv making_0.0.34_1_amd64.deb build.deb
+$ sha256sum *.deb
+f12294d903bf958b54ce7cbc4d684587821b062dbd42e179abc40985e2a3a5e7  build.deb
+f12294d903bf958b54ce7cbc4d684587821b062dbd42e179abc40985e2a3a5e7  repo.deb
+```
