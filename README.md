@@ -5,12 +5,13 @@
 ## Usage
 
 Use it just like `make`.
-See `making -h` for its specific options (custom command, custom exclude from the watches, etc.).
+See `making -h` for its specific options (custom command, exclude files from monitoring, etc.).
+
+![image](https://github.com/user-attachments/assets/a954ba30-f40c-4ce3-bf59-7c7352f3ba52)
 
 ## Install
 
-For Debian based distribution, head over to https://aptly.fita.dev and add it to your system repositories.
-Then:
+For Debian based distribution, head over to https://aptly.fita.dev, add it to your repositories, and then:
 ```console
 sudo apt install making
 ```
