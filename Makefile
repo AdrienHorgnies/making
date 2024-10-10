@@ -22,7 +22,7 @@ test: making test-lib.sh test-project/Makefile $(wildcard test-cases/*)
 publish: $(DEB)
 	git tag $(VERSION)
 	git push origin $(VERSION)
-	rsync $(DEB) pkg.fita.dev:/usr/share/anypac/inbox
+	scp $(DEB) pkg.fita.dev:/usr/share/anypac/inbox
 
 install: $(DEB)
 	sudo dpkg -i $(DEB)
