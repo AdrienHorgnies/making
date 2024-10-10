@@ -54,8 +54,8 @@ See `making -h` for its specific options:
 
 ## Install
 
-For Debian based distribution, a package is available at https://aptly.fita.dev.
-Follow the instructions to add the repository at https://aptly.fita.dev, then:
+For Debian based distribution, a package is available at https://pkg.fita.dev.
+Follow the instructions to add the repository at https://pkg.fita.dev, then:
 ```console
 sudo apt install making
 ```
